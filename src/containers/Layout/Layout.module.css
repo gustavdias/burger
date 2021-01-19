@@ -1,0 +1,7 @@
+.Content{
+    margin-top: 72px;
+}
+
+/*     margin-top: 16px; into     margin-top: 72px; 56(toolbar)+16(from before) =72
+
+ content class which sets the margin top */
