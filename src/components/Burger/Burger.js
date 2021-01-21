@@ -1,8 +1,10 @@
 import React from "react";
 import classes from "./Burger.module.css";
 import BurgerIngredient from "./BurgerIngredient/BurgerIngredient";
+// import { withRouter } from "react-router-dom";
 
 const burger = (props) => {
+  console.log(props);
   //Here you transform the object into an array, so you can use map
   //Object.keys gets the keys of the object and put them into a array
   //igKey for ingredient key
@@ -36,5 +38,9 @@ const burger = (props) => {
     </div>
   );
 };
+//!Volta - withRouter hoc from react-router-dom
+//? a way we could still get the props in the burger component
+//If you ever need direct access to match history and location and you don't want to manually pass it on from the top level component, you can use withRouter.
+// export default withRouter(burger);
 
 export default burger;

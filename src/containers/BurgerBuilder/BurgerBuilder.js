@@ -38,6 +38,7 @@ export class BurgerBuilder extends Component {
   };
   //componentDidMount: a good place for fetching data :)
   componentDidMount() {
+    console.log(this.props);
     instanceAxios
       .get(
         "https://gd-burger-builder-react-app-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json"
@@ -118,32 +119,55 @@ export class BurgerBuilder extends Component {
 
   //? Checkout
   purchaseContinueHandler = () => {
-    // alert("You continue!");
-    this.setState({ loading: true });
-    const order = {
-      ingredients: this.state.ingredients,
-      price: this.state.totalPrice,
-      customer: {
-        name: "Johnny Walker",
-        address: {
-          street: "Teststreet 1",
-          zipCode: "23123",
-          country: "Germany",
-        },
-        email: "test@test.com",
-      },
-      deliveryMethod: "fastest",
-    };
-    //Post method / for firebase you need to add .json
-    //!
-    instanceAxios
-      .post("/orders.json", order)
-      .then((response) => {
-        this.setState({ loading: false, purchasing: false });
-      })
-      .catch((error) => {
-        this.setState({ loading: false, purchasing: false });
-      });
+    // // alert("You continue!");
+
+    //>now in ContactData orderHandler
+    // this.setState({ loading: true });
+    // const order = {
+    //   ingredients: this.state.ingredients,
+    //   price: this.state.totalPrice,
+    //   customer: {
+    //     name: "Johnny Walker",
+    //     address: {
+    //       street: "Teststreet 1",
+    //       zipCode: "23123",
+    //       country: "Germany",
+    //     },
+    //     email: "test@test.com",
+    //   },
+    //   deliveryMethod: "fastest",
+    // };
+    // //Post method / for firebase you need to add .json
+    // //!
+    // instanceAxios
+    //   .post("/orders.json", order)
+    //   .then((response) => {
+    //     this.setState({ loading: false, purchasing: false });
+    //   })
+    //   .catch((error) => {
+    //     this.setState({ loading: false, purchasing: false });
+    //   });
+
+    //Logic to pass the ingredients into the checkout container
+    const queryParams = [];
+    for (let i in this.state.ingredients) {
+      queryParams.push(
+        encodeURIComponent(i) +
+          "=" +
+          encodeURIComponent(this.state.ingredients[i])
+      );
+    }
+
+    //To pass the total price to checkout
+    queryParams.push('price=' + this.state.totalPrice);
+
+
+    //history is one of these special props provided by the router
+    const queryString = queryParams.join("&");
+    this.props.history.push({
+      pathname: "/checkout",
+      search: "?" + queryString,
+    }); //push prop - allows you to switch the page and push a new page onto that stack of pages.
   };
 
   render() {
