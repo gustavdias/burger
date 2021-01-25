@@ -5,6 +5,7 @@ const button = (props) => {
   return (
     //btnType is either danger or success
     <button
+      disabled={props.disabled}
       className={[classes.Button, classes[props.btnType]].join(" ")}
       onClick={props.clicked}
     >
