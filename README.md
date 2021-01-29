@@ -1,4 +1,5 @@
 # Getting Started with Create React App
+# Colors: Primary: #d62300, S — Light #ff5e33, S — Dark #9c0000 / Secondary: #ff8732, P — Light #ffb862, P — Dark #c65800
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
