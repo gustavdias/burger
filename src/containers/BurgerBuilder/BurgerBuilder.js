@@ -6,14 +6,17 @@ import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
 import instanceAxios from "../../axios-orders";
 import Spinner from "../../components/UI/Spinner/Spinner";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler"; //for axios REST calls
+import { connect } from "react-redux";
+import * as actionTypes from "../../store/actions";
 
 //convention name constants you want to use as global constants in all capital characters.
-const INGREDIENT_PRICES = {
-  salad: 0.5,
-  cheese: 0.4,
-  meat: 1.3,
-  bacon: 0.7,
-};
+//*into redux - reducer.js
+// const INGREDIENT_PRICES = {
+//   salad: 0.5,
+//   cheese: 0.4,
+//   meat: 1.3,
+//   bacon: 0.7,
+// };
 
 export class BurgerBuilder extends Component {
   // constructor(props){
@@ -28,9 +31,17 @@ export class BurgerBuilder extends Component {
     //   cheese: 0,
     //   meat: 0,
     // },
-    ingredients: null,
-    totalPrice: 4,
-    purchasable: false,
+    //* Move to redux - reducer
+    //ingredients and totalPrice are better in redux
+    // ingredients: null,
+    // totalPrice: 4,
+
+    //purchasable is more for the UI state (activate or deactivate the order button), this is better as a local state
+
+    //redux
+    // purchasable: false,
+
+    //purchasing, loading and error are kind of local UI state
     purchasing: false,
     //spinner
     loading: false,
@@ -39,16 +50,17 @@ export class BurgerBuilder extends Component {
   //componentDidMount: a good place for fetching data :)
   componentDidMount() {
     console.log(this.props);
-    instanceAxios
-      .get(
-        "https://gd-burger-builder-react-app-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json"
-      )
-      .then((response) => {
-        this.setState({ ingredients: response.data });
-      })
-      .catch((error) => {
-        this.setState({ error: true });
-      });
+    //*After I will have to use Redux with async code, maybe redux saga
+    // instanceAxios
+    //   .get(
+    //     "https://gd-burger-builder-react-app-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json"
+    //   )
+    //   .then((response) => {
+    //     this.setState({ ingredients: response.data });
+    //   })
+    //   .catch((error) => {
+    //     this.setState({ error: true });
+    //   });
   }
 
   // how to decide is the burger is purchasable, a.k.a disable/enable order button
@@ -64,46 +76,50 @@ export class BurgerBuilder extends Component {
       .reduce((sum, el) => {
         return sum + el;
       }, 0);
-    this.setState({ purchasable: sum > 0 });
+
+    // since I took out purchasable={this.state.purchasable}
+    //    this.setState({ purchasable: sum > 0 });
+    return sum > 0;
   }
 
+  //* Move to redux - actions
   //Updates ingredients and price
-  addIngredientHandler = (type) => {
-    const oldCount = this.state.ingredients[type];
-    const updatedCount = oldCount + 1;
-    const updatedIngredients = {
-      //State should be updated in an immutable way. Here I create a new js object and use spread operator to distribute the properties of the old ingredients state into the new object
-      ...this.state.ingredients,
-    };
-    //Updates Price
-    updatedIngredients[type] = updatedCount;
-    const priceAddition = INGREDIENT_PRICES[type];
-    const oldPrice = this.state.totalPrice;
-    const newPrice = oldPrice + priceAddition;
-    this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
-    this.updatePurchaseState(updatedIngredients); //related to disabling the order button
-    //the problem is that the ingredients which I'm analyzing is of course my old state here. Now due to the way set state works, when we execute update purchase state, we might not get the updated ingredients and therefore, once we copy the ingredients and analyze them, we might simply get an outdated version.
-    //to solve it, you pass updatedIngredients to this.updatePurchaseState()
-    // /this.updatePurchaseState(updatedIngredients)
-  };
+  // addIngredientHandler = (type) => {
+  //   const oldCount = this.state.ingredients[type];
+  //   const updatedCount = oldCount + 1;
+  //   const updatedIngredients = {
+  //     //State should be updated in an immutable way. Here I create a new js object and use spread operator to distribute the properties of the old ingredients state into the new object
+  //     ...this.state.ingredients,
+  //   };
+  //   //Updates Price
+  //   updatedIngredients[type] = updatedCount;
+  //   const priceAddition = INGREDIENT_PRICES[type];
+  //   const oldPrice = this.state.totalPrice;
+  //   const newPrice = oldPrice + priceAddition;
+  //   this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
+  //   this.updatePurchaseState(updatedIngredients); //related to disabling the order button
+  //   //the problem is that the ingredients which I'm analyzing is of course my old state here. Now due to the way set state works, when we execute update purchase state, we might not get the updated ingredients and therefore, once we copy the ingredients and analyze them, we might simply get an outdated version.
+  //   //to solve it, you pass updatedIngredients to this.updatePurchaseState()
+  //   // /this.updatePurchaseState(updatedIngredients)
+  // };
 
-  removeIngredientHandler = (type) => {
-    const oldCount = this.state.ingredients[type];
-    //if statement so you don't get a negative state number for ingredients
-    if (oldCount <= 0) {
-      return;
-    }
-    const updatedCount = oldCount - 1;
-    const updatedIngredients = {
-      ...this.state.ingredients,
-    };
-    updatedIngredients[type] = updatedCount;
-    const priceDeduction = INGREDIENT_PRICES[type];
-    const oldPrice = this.state.totalPrice;
-    const newPrice = oldPrice - priceDeduction;
-    this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
-    this.updatePurchaseState(updatedIngredients);
-  };
+  // removeIngredientHandler = (type) => {
+  //   const oldCount = this.state.ingredients[type];
+  //   //if statement so you don't get a negative state number for ingredients
+  //   if (oldCount <= 0) {
+  //     return;
+  //   }
+  //   const updatedCount = oldCount - 1;
+  //   const updatedIngredients = {
+  //     ...this.state.ingredients,
+  //   };
+  //   updatedIngredients[type] = updatedCount;
+  //   const priceDeduction = INGREDIENT_PRICES[type];
+  //   const oldPrice = this.state.totalPrice;
+  //   const newPrice = oldPrice - priceDeduction;
+  //   this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
+  //   this.updatePurchaseState(updatedIngredients);
+  // };
 
   //modal appears with info when button order now is clicked
   //this inside a event does not refers to the class
@@ -148,8 +164,9 @@ export class BurgerBuilder extends Component {
     //     this.setState({ loading: false, purchasing: false });
     //   });
 
+    //*with Redux query params to pass our ingredients to the checkout component are no longer needed
     //Logic to pass the ingredients into the checkout container
-    const queryParams = [];
+    /*  const queryParams = [];
     for (let i in this.state.ingredients) {
       queryParams.push(
         encodeURIComponent(i) +
@@ -159,21 +176,26 @@ export class BurgerBuilder extends Component {
     }
 
     //To pass the total price to checkout
-    queryParams.push('price=' + this.state.totalPrice);
-
+    queryParams.push("price=" + this.state.totalPrice);
 
     //history is one of these special props provided by the router
-    const queryString = queryParams.join("&");
-    this.props.history.push({
-      pathname: "/checkout",
-      search: "?" + queryString,
-    }); //push prop - allows you to switch the page and push a new page onto that stack of pages.
-  };
+    const queryString = queryParams.join("&"); */
+    
+    //*with redux I can make this shorter
+  //   this.props.history.push({
+  //     pathname: "/checkout",
+  //     search: "?" + queryString,
+  //   }); //push prop - allows you to switch the page and push a new page onto that stack of pages.
+  // };
+  this.props.history.push('/checkout');//I can get the ingredients from the redux store.
+  }
 
   render() {
     //logic to disable buttons
     const disabledInfo = {
-      ...this.state.ingredients,
+      // ...this.state.ingredients,
+      //with redux:
+      ...this.props.ings,
     };
     for (let key in disabledInfo) {
       disabledInfo[key] = disabledInfo[key] <= 0; //it will give true or false for smaller or equal to 0 and update the copy of the object
@@ -186,27 +208,39 @@ export class BurgerBuilder extends Component {
     ) : (
       <Spinner />
     );
-    if (this.state.ingredients) {
+    // if (this.state.ingredients) {
+    //*with redux
+    if (this.props.ings) {
       //Check if there are ingredients, so I can map through it get it's keys from server
       burger = (
         <React.Fragment>
-          <Burger ingredients={this.state.ingredients} />;
+          {/* <Burger ingredients={this.state.ingredients} />; */}
+          <Burger ingredients={this.props.ings} />;
           {/* addIngredientHandler into the build controls / button  */}
           <BuildControls
-            ingredientAdded={this.addIngredientHandler}
-            ingredientRemoved={this.removeIngredientHandler}
+            // ingredientAdded={this.addIngredientHandler}
+            ingredientAdded={this.props.onIngredientAdded}
+            // ingredientRemoved={this.removeIngredientHandler}
+            ingredientRemoved={this.props.onIngredientRemoved}
             disabled={disabledInfo}
-            purchasable={this.state.purchasable}
+            //since purchasable: false, was taken out of this component
+            // purchasable={this.state.purchasable}
+            purchasable={this.updatePurchaseState(this.props.ings)}
             // ordered={this.state.totalPrice} //index.js:1 Warning: Expected `onClick` listener to be a function, instead got a value of `number` type.
             ordered={this.purchaseHandler}
-            price={this.state.totalPrice}
+            //redux
+            // price={this.state.totalPrice}
+            price={this.props.price}
           />
         </React.Fragment>
       );
       orderSummary = (
         <OrderSummary
-          ingredients={this.state.ingredients}
-          price={this.state.totalPrice}
+          // ingredients={this.state.ingredients}
+          ingredients={this.props.ings}
+          //redux
+          // price={this.state.totalPrice}
+          price={this.props.price}
           purchaseCancelled={this.purchaseCancelHandler}
           purchaseContinued={this.purchaseContinueHandler}
         />
@@ -233,5 +267,26 @@ export class BurgerBuilder extends Component {
     );
   }
 }
+const mapStateToProps = (state) => {
+  return {
+    ings: state.ingredients,
+    price: state.totalPrice,
+  };
+};
 
-export default withErrorHandler(BurgerBuilder, instanceAxios);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onIngredientAdded: (ingName) =>
+      dispatch({ type: actionTypes.ADD_INGREDIENT, ingredientName: ingName }),
+    onIngredientRemoved: (ingName) =>
+      dispatch({
+        type: actionTypes.REMOVE_INGREDIENT,
+        ingredientName: ingName,
+      }),
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(BurgerBuilder, instanceAxios));
