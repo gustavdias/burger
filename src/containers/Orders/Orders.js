@@ -3,6 +3,9 @@ import React, { Component } from "react";
 import Order from "../../components/Order/Order";
 import instanceAxios from "../../axios-orders";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
+import Spinner from "../../components/UI/Spinner/Spinner";
+import * as actions from "../../store/actions/index";
+import { connect } from "react-redux";
 
 class Orders extends Component {
   state = {
@@ -10,8 +13,9 @@ class Orders extends Component {
     loading: true,
   };
 
+  //*fetching orders via Redux - code went into oder action
   componentDidMount() {
-    instanceAxios
+    /*  instanceAxios
       .get("/orders.json")
       .then((res) => {
         const fetchedOrders = [];
@@ -26,24 +30,41 @@ class Orders extends Component {
       })
       .catch((err) => {
         this.setState({ loading: false });
-      });
+      }); */
+    this.props.onFetchOrders();
   }
 
   render() {
-    return (
-      <div>
-        {this.state.orders.map((order) => (
-          <Order
-            key={order.id}
-            ingredients={order.ingredients}
-            // Number.parseFloat or "+" (+order.price)to convert string into number
+    let orders = <Spinner />;
+    if (!this.props.loading) {
+      orders = this.props.orders.map((order) => (
+        <Order
+          key={order.id}
+          ingredients={order.ingredients}
+          // Number.parseFloat or "+" (+order.price)to convert string into number
 
-            price={order.price}
-          />
-        ))}
-      </div>
-    );
+          price={order.price}
+        />
+      ));
+    }
+    return <div>{orders}</div>;
   }
 }
 
-export default withErrorHandler(Orders, instanceAxios);
+const mapStateToProps = (state) => {
+  return {
+    orders: state.order.orders,
+    loading: state.order.loading,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onFetchOrders: () => dispatch(actions.fetchOrders()),
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(Orders, instanceAxios));

@@ -7,7 +7,11 @@ import instanceAxios from "../../axios-orders";
 import Spinner from "../../components/UI/Spinner/Spinner";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler"; //for axios REST calls
 import { connect } from "react-redux";
-import * as actionTypes from "../../store/actions";
+import * as actions from "../../store/actions/index";
+
+// import * as actionTypes from "../../store/actions/actionTypes";
+//*instead of importing actionTypes, I import actionCreators from a central file exporting all of them
+// import * as burgerBuilderActions from "../../store/actions/index";
 
 //convention name constants you want to use as global constants in all capital characters.
 //*into redux - reducer.js
@@ -43,9 +47,9 @@ export class BurgerBuilder extends Component {
 
     //purchasing, loading and error are kind of local UI state
     purchasing: false,
-    //spinner
-    loading: false,
-    error: false,
+    // //spinner
+    // loading: false,
+    // error: false,
   };
   //componentDidMount: a good place for fetching data :)
   componentDidMount() {
@@ -61,6 +65,7 @@ export class BurgerBuilder extends Component {
     //   .catch((error) => {
     //     this.setState({ error: true });
     //   });
+    this.props.onInitIngredients(); //fetch ingredients
   }
 
   // how to decide is the burger is purchasable, a.k.a disable/enable order button
@@ -180,15 +185,17 @@ export class BurgerBuilder extends Component {
 
     //history is one of these special props provided by the router
     const queryString = queryParams.join("&"); */
-    
+
     //*with redux I can make this shorter
-  //   this.props.history.push({
-  //     pathname: "/checkout",
-  //     search: "?" + queryString,
-  //   }); //push prop - allows you to switch the page and push a new page onto that stack of pages.
-  // };
-  this.props.history.push('/checkout');//I can get the ingredients from the redux store.
-  }
+    //   this.props.history.push({
+    //     pathname: "/checkout",
+    //     search: "?" + queryString,
+    //   }); //push prop - allows you to switch the page and push a new page onto that stack of pages.
+    // };
+    this.props.history.push("/checkout"); //I can get the ingredients from the redux store.
+    this.props.onInitPurchase();
+
+  };
 
   render() {
     //logic to disable buttons
@@ -203,7 +210,8 @@ export class BurgerBuilder extends Component {
 
     let orderSummary = null;
 
-    let burger = this.state.error ? (
+    // let burger = this.state.error ? (
+    let burger = this.props.error ? (
       <p>Ingredients cannot be loaded!</p>
     ) : (
       <Spinner />
@@ -237,7 +245,7 @@ export class BurgerBuilder extends Component {
       orderSummary = (
         <OrderSummary
           // ingredients={this.state.ingredients}
-          ingredients={this.props.ings}
+          ingredients={this.props.ings} //!!!!!!!!!!!!!error!!!
           //redux
           // price={this.state.totalPrice}
           price={this.props.price}
@@ -246,9 +254,9 @@ export class BurgerBuilder extends Component {
         />
       );
     }
-    if (this.state.loading) {
-      orderSummary = <Spinner />;
-    }
+    // if (this.state.loading) {
+    //   orderSummary = <Spinner />;
+    // }
 
     // {salad: true, meat: false, ...}
     return (
@@ -269,20 +277,22 @@ export class BurgerBuilder extends Component {
 }
 const mapStateToProps = (state) => {
   return {
-    ings: state.ingredients,
-    price: state.totalPrice,
+    // ings: state.ingredients, - after combineReducers into a rootReducer
+    ings: state.burgerBuilder.ingredients,
+    price: state.burgerBuilder.totalPrice,
+    error: state.burgerBuilder.error,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onIngredientAdded: (ingName) =>
-      dispatch({ type: actionTypes.ADD_INGREDIENT, ingredientName: ingName }),
+    //*where I dispatch actions, I no longer dispatch them directly, instead I want to use my action creators.
+    // dispatch({ type: actionTypes.ADD_INGREDIENT, ingredientName: ingName }),
+    onIngredientAdded: (ingName) => dispatch(actions.addIngredient(ingName)),
     onIngredientRemoved: (ingName) =>
-      dispatch({
-        type: actionTypes.REMOVE_INGREDIENT,
-        ingredientName: ingName,
-      }),
+      dispatch(actions.removeIngredient(ingName)),
+    onInitIngredients: () => dispatch(actions.initIngredients()),
+    onInitPurchase: () => dispatch(actions.purchaseInit()),
   };
 };
 
@@ -290,3 +300,4 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(withErrorHandler(BurgerBuilder, instanceAxios));
+//we can still handle the errors with our higher order component here because we're using an axios instance, so no matter if we do send the request from another place in the app like our async action creator, we can still handle it with the same axios instance which we're passing to the higher order component to show our error modal which of course is what we want to do still, we want to have this central error handling place.

@@ -5,10 +5,33 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import {createStore} from "redux";
-import reducer from './store/reducers/reducer'
+import { createStore, compose, applyMiddleware, combineReducers } from "redux";
+// import reducer from "./store/reducers/burgerBuilder";
+import thunk from "redux-thunk";
+import burgerBuilderReducer from "./store/reducers/burgerBuilder";
+import orderReducer from "./store/reducers/orders";
 
-const store = createStore(reducer)
+//? basic setup - no middleware
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+//! TypeError: Cannot read property 'toFixed' of undefined
+//! src/components/Burger/BuildControls/BuildControls.js:17 - Current Price: <strong>{props.price.toFixed(2)}</strong>
+//on the checkout page in the checkout summary, we of course show a preview of our burger with the ingredients we have and initially before we loaded the ingredients, ingredients is null and therefore it fails if we try to loop through our ingredients.
+// const store = createStore(
+//   reducer,
+//   /* preloadedState, */ +composeEnhancers,
+//   compose(applyMiddleware(thunk))
+// );
+const rootReducer = combineReducers({
+  order: orderReducer,
+  burgerBuilder: burgerBuilderReducer,
+});
+
+const store = createStore(
+  rootReducer,
+  composeEnhancers(applyMiddleware(thunk))
+);
+
 const app = (
   <React.StrictMode>
     <Provider store={store}>

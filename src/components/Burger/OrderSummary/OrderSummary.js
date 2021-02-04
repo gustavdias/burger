@@ -23,6 +23,9 @@ class OrderSummary extends Component {
         );
       }
     );
+    console.log("!!!---OrderSummary - this.props.ingredients: ", this.props.ingredients);
+
+    console.log("!!!---OrderSummary - this.props.price: ", this.props.price);
     return (
       <>
         <h3>Your Order</h3>

@@ -6,6 +6,8 @@ import classes from "./ContactData.module.css";
 import instanceAxios from "../../../axios-orders";
 import Input from "../../../components/UI/Input/Input";
 import { connect } from "react-redux";
+import withErrorHandler from "../../../hoc/withErrorHandler/withErrorHandler";
+import * as orderActions from "../../../store/actions/index";
 
 class ContactData extends Component {
   state = {
@@ -107,7 +109,7 @@ class ContactData extends Component {
         // },
         // valid: false,
 
-        value: "",
+        value: "fastest",
         validation: {},
         valid: true,
       },
@@ -121,7 +123,7 @@ class ContactData extends Component {
 
   orderHandler = (event) => {
     event.preventDefault(); //I don't want to send the request automatically that would reload my page
-    this.setState({ loading: true });
+    // this.setState({ loading: true });
     const formData = {}; //here I extract the value (of each element) from the state
     //Dynamically creates inputs
     //loop through my form - formElementIdentifier (email, country...)
@@ -136,6 +138,9 @@ class ContactData extends Component {
       price: this.props.price,
       orderData: formData,
     };
+
+    this.props.onOrderBurger(order);
+
     instanceAxios
       .post("/orders.json", order)
       .then((response) => {
@@ -259,7 +264,10 @@ class ContactData extends Component {
         </Button>
       </form>
     );
-    if (this.state.loading) {
+
+    //We need to handle that loading state in our redux store therefore, because we put the whole process of ordering into redux.
+    // if (this.state.loading) {
+    if (this.props.loading) {
       form = <Spinner />;
     }
     return (
@@ -273,9 +281,20 @@ class ContactData extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    ings: state.ingredients,
-    price: state.totalPrice,
+    ings: state.burgerBuilder.ingredients,
+    price: state.burgerBuilder.totalPrice,
+    loading: state.order.loading,
   };
 };
 
-export default connect(mapStateToProps)(ContactData);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onOrderBurger: (orderData) =>
+      dispatch(orderActions.purchaseBurger(orderData)),
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(ContactData, instanceAxios));
