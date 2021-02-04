@@ -10,6 +10,7 @@ import { createStore, compose, applyMiddleware, combineReducers } from "redux";
 import thunk from "redux-thunk";
 import burgerBuilderReducer from "./store/reducers/burgerBuilder";
 import orderReducer from "./store/reducers/orders";
+import authReducer from "./store/reducers/auth"
 
 //? basic setup - no middleware
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -25,6 +26,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const rootReducer = combineReducers({
   order: orderReducer,
   burgerBuilder: burgerBuilderReducer,
+  auth: authReducer,
 });
 
 const store = createStore(

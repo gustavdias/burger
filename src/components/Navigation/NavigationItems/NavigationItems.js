@@ -14,6 +14,8 @@ const navigationItems = () => (
     {/* exact will be passed to NavigationItem, so it will work only with this link */}
 
     <NavigationItem link="/orders">Orders</NavigationItem>
+    <NavigationItem link="/auth">Authenticate</NavigationItem>
+
   </ul>
 );
 
