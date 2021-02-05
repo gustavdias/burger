@@ -1,10 +1,13 @@
 import * as actionTypes from "../actions/actionTypes";
-import { updateObject } from "../utility";
+import { updateObject } from "../../shared/utility";
 
 const initialState = {
   ingredients: null,
   totalPrice: 4,
   error: false,
+  //!make sure that when the user builds a burger and is redirected to the sign up page (because he was not authenticated), that he is then redirected to the checkout page from the authenticate page, so he can continue with the burger checkout.
+  building: false, //set to true when user adds or removes an ingredient
+  //*use building to change the redirect path back if I think that the user is actually not building a burger anymore
 };
 
 const INGREDIENT_PRICES = {
@@ -22,6 +25,7 @@ const addIngredient = (state, action) => {
   const updatedState = {
     ingredients: updatedIngredients,
     totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName],
+    building: true,
   };
   return updateObject(state, updatedState);
 };
@@ -34,6 +38,7 @@ const removeIngredient = (state, action) => {
   const updatedSt = {
     ingredients: updatedIngs,
     totalPrice: state.totalPrice - INGREDIENT_PRICES[action.ingredientName],
+    building: true,
   };
   return updateObject(state, updatedSt);
 };
@@ -48,6 +53,7 @@ const setIngredients = (state, action) => {
     },
     totalPrice: 4,
     error: false,
+    building: false,//when page is reloaded - starting from scratch, not building yet.
   });
 };
 

@@ -28,6 +28,29 @@ export const authFail = (error) => {
   };
 };
 
+//you get a token and an expirationDate to to see if it is still valid, if not I want to clean up the token with the logout dispatch action
+export const logout = () => {
+  //* access local storage and remove token and expirationDate + userId
+  localStorage.removeItem("token");
+  localStorage.removeItem("expirationDate");
+  localStorage.removeItem("userId");
+  //* I should check it when the application loads - on App.js - For checking this, we will need a new action: authSuccess(when user is logged in) and execute or dispatch checkAuthTimeout and pass the expiration in amount to still have that functionality going.
+  return {
+    type: actionTypes.AUTH_LOGOUT,
+  };
+};
+
+//! logout navbar when token expires
+//* clicking on logout cleans the token and redirects
+export const checkAuthTimeout = (expirationTime) => {
+  return (dispatch) => {
+    //run async code
+    setTimeout(() => {
+      dispatch(logout());
+    }, expirationTime * 1000); //x1000 to turn milliseconds into seconds
+  };
+};
+
 //! Posting the data for auth on the server - firebase
 export const auth = (email, password, isSignup) => {
   return (dispatch) => {
@@ -51,10 +74,30 @@ export const auth = (email, password, isSignup) => {
       .post(url, authData)
       .then((response) => {
         console.log(response);
+
+        //?Persistent Auth state with localStorage
+        //! Volta!!!! Persistent Auth state with localStorage - local storage API is baked into the browser
+
+        const expirationDate = new Date(
+          new Date().getTime() + response.data.expiresIn * 1000 //milliseconds into seconds
+          //extract the current time and adds the 1h expiration time (3600*1000 )
+          //*check expiration date on chrome application => local storage => localhost:3000
+          //you get a token and an expirationDate to to see if it is still valid, if not I want to clean up the token with the logout dispatch action
+        );
+        localStorage.setItem("token", response.data.idToken); //token
+        localStorage.setItem("expirationDate", expirationDate); //when it expires
+        localStorage.setItem("userId", response.data.localId); //user id
+        //?Persistent Auth state with localStorage
+
         // dispatch(authSuccess(response.data));
         //!storing the authentication status JWT = idToken and user = localId
         dispatch(authSuccess(response.data.idToken, response.data.localId));
         //inspect the response to see how to extract the data I want to pass on to authSuccess
+
+        //! logout navbar when token expires
+        dispatch(checkAuthTimeout(response.data.expiresIn));
+        //?Persistent Auth state with localStorage
+        //* I should check it when the application loads - on App.js - For checking this, we will need a new action: authSuccess(when user is logged in) and execute or dispatch checkAuthTimeout and pass the expiration in amount to still have that functionality going.
       })
       .catch((err) => {
         console.log(err);
@@ -84,3 +127,37 @@ export const auth = (email, password, isSignup) => {
 // refreshToken: "AOvuKvQI6IIYWrBqexb5PONfeb0mnOZr5diTaAEXoexWVhf6l0evDEXjlPcBMit2jBL3yDdzZWw4V3_OSiKakc4i-w405pp6qQ--LTp-IB9-E79eO7iNPH5EeWsVimyl9K2KAvenqc-ObY2SIAN0RwfFC-WVJwiDgC-ED0tN6QOjIRQs7poZt5h6G8JOAteyXcRItkomVXxx9A08HCYRh_PGdTHlMqPOsIXedzBm6g7xblXqgssTCNI"
 //* refreshToken is used to generate a new idToken - only you and your application can do that - refreshing the token won't be used here, this is something you would have to do if you want to ensure that tokens don't expire after 1 hour.
 // registered: true
+
+//* redirect path from BurgerBuilder - this.props.history.push('/auth');
+export const setAuthRedirectPath = (path) => {
+  return {
+    type: actionTypes.SET_AUTH_REDIRECT_PATH,
+    path: path,
+  };
+};
+
+//?Persistent Auth state with localStorage
+//* I should check it when the application loads - on App.js - For checking this, we will need a new action: authSuccess(when user is logged in) and execute or dispatch checkAuthTimeout and pass the expiration in amount to still have that functionality going.
+// dispatch authCheckState to successfully automatically log the user in if we have a valid token.
+export const authCheckState = () => {
+  return (dispatch) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      dispatch(logout());
+    } else {
+      const expirationDate = new Date(localStorage.getItem("expirationDate"));
+      if (expirationDate <= new Date()) {
+        dispatch(logout());
+      } else {
+        const userId = localStorage.getItem("userId");
+        dispatch(authSuccess(token, userId));
+        dispatch(
+          checkAuthTimeout(
+            (expirationDate.getTime() - new Date().getTime()) / 1000
+            //*amounts of seconds, the amount of seconds until the user should be logged out,
+          )
+        );
+      }
+    }
+  };
+};

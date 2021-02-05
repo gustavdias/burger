@@ -130,7 +130,16 @@ export class BurgerBuilder extends Component {
   //this inside a event does not refers to the class
   //That is why you should use a arrow function
   purchaseHandler = () => {
-    this.setState({ purchasing: true });
+    if (this.props.isAuthenticated) {
+      //if user is authenticated, set the state to purchasing
+      this.setState({ purchasing: true });
+    } else {
+      this.props.onSetAuthRedirectPath("/checkout");
+      //else push the user to the /auth page for login or signup
+      // this.props.onSetAuthRedirectPath('/checkout');
+      //*dynamic approach if you need to support different URLs would be to store the URL in your redux store
+      this.props.history.push("/auth");
+    }
   };
 
   //if user clicks on the backdrop, he cancels the order
@@ -194,7 +203,6 @@ export class BurgerBuilder extends Component {
     // };
     this.props.history.push("/checkout"); //I can get the ingredients from the redux store.
     this.props.onInitPurchase();
-
   };
 
   render() {
@@ -239,6 +247,8 @@ export class BurgerBuilder extends Component {
             //redux
             // price={this.state.totalPrice}
             price={this.props.price}
+            //*build controls need to know whether I'm authenticated or not.
+            isAuth={this.props.isAuthenticated}
           />
         </React.Fragment>
       );
@@ -281,6 +291,8 @@ const mapStateToProps = (state) => {
     ings: state.burgerBuilder.ingredients,
     price: state.burgerBuilder.totalPrice,
     error: state.burgerBuilder.error,
+    //*build controls need to know whether I'm authenticated or not
+    isAuthenticated: state.auth.token !== null,
   };
 };
 
@@ -293,6 +305,8 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(actions.removeIngredient(ingName)),
     onInitIngredients: () => dispatch(actions.initIngredients()),
     onInitPurchase: () => dispatch(actions.purchaseInit()),
+    onSetAuthRedirectPath: (path) =>
+      dispatch(actions.setAuthRedirectPath(path)),
   };
 };
 

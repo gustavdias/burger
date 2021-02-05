@@ -31,7 +31,7 @@ class Orders extends Component {
       .catch((err) => {
         this.setState({ loading: false });
       }); */
-    this.props.onFetchOrders();
+    this.props.onFetchOrders(this.props.token, this.props.userId);
   }
 
   render() {
@@ -55,12 +55,16 @@ const mapStateToProps = (state) => {
   return {
     orders: state.order.orders,
     loading: state.order.loading,
+    token: state.auth.token, //!volta - pass token to server
+    userId: state.auth.userId, //!Displaying user specific orders
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onFetchOrders: () => dispatch(actions.fetchOrders()),
+    //!volta - pass token to server
+    onFetchOrders: (token, userId) =>
+      dispatch(actions.fetchOrders(token, userId)),
   };
 };
 

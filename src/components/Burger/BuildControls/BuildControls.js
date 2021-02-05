@@ -17,10 +17,10 @@ const buildControls = (props) => (
       Current Price: <strong>{props.price.toFixed(2)}</strong>
     </p>
 
-    {controls.map(ctrl => (
-            <BuildControl 
-                key={ctrl.label} 
-                label={ctrl.label}
+    {controls.map((ctrl) => (
+      <BuildControl
+        key={ctrl.label}
+        label={ctrl.label}
         //!!!Volta
         added={() => props.ingredientAdded(ctrl.type)} // to keep track of which type this build control is of, use types,
         //you could pass type to the ingredient:
@@ -33,8 +33,9 @@ const buildControls = (props) => (
       className={classes.OrderButton}
       disabled={!props.purchasable}
       onClick={props.ordered}
+      //*button should behave differently if user is not authenticated
     >
-      ORDER NOW
+      {props.isAuth ? "ORDER NOW" : "SIGN UP TO ORDER"}
     </button>
   </div>
 );

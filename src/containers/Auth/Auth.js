@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 
 import Input from "../../components/UI/Input/Input";
 import Button from "../../components/UI/Button/Button";
@@ -42,6 +43,14 @@ class Auth extends Component {
     },
     isSignup: true,
   };
+
+  //*use building to change the redirect path back if I think that the user is actually not building a burger anymore
+  componentDidMount() {
+    //make sure that I actually reset the path if we reach this page whilst not building a burger
+    if (!this.props.buildingBurger && this.props.authRedirectPath !== "/") {
+      this.props.onSetAuthRedirectPath();
+    }
+  }
 
   checkValidity(value, rules) {
     let isValid = true;
@@ -139,8 +148,20 @@ class Auth extends Component {
       errorMessage = <p>{this.props.error.message}</p>;
     }
 
+    //*redirect away from auth from when login is successful
+    let authRedirect = null;
+    if (this.props.isAuthenticated) {
+      authRedirect = (
+        <Redirect
+          to={this.props.authRedirectPath}
+          //*bind to the dynamic property authRedirectPath which is bound to the path stored in my redux store.
+        />
+      );
+    }
+
     return (
       <div className={classes.Auth}>
+        {authRedirect}
         {errorMessage}
         <form onSubmit={this.submitHandler}>
           {form}
@@ -159,6 +180,11 @@ const mapStateToProps = (state) => {
   return {
     loading: state.auth.loading,
     error: state.auth.error,
+    //*redirect away from auth from when login is successful
+    isAuthenticated: state.auth.token !== null,
+    //*use building to change the redirect path back if I think that the user is actually not building a burger anymore
+    buildingBurger: state.burgerBuilder.building,
+    authRedirectPath: state.auth.authRedirectPath,
   };
 };
 
@@ -166,6 +192,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     onAuth: (email, password, isSignup) =>
       dispatch(actions.auth(email, password, isSignup)),
+    //*use building to change the redirect path back if I think that the user is actually not building a burger anymore
+    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/")),
   };
 };
 

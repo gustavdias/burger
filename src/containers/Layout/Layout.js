@@ -3,6 +3,9 @@ import classes from "./Layout.module.css";
 import Toolbar from "../../components/Navigation/Toolbar/Toolbar";
 import SideDrawer from "../../components/Navigation/SideDrawer/SideDrawer";
 
+//!it would make sense to connect the layout here to our store so that we can pass the auth information down to toolbar and side drawer which then in turn could pass it to navigation items.
+import { connect } from "react-redux";
+
 class Layout extends Component {
   state = {
     showSideDrawer: false,
@@ -29,8 +32,14 @@ class Layout extends Component {
   render() {
     return (
       <>
-        <Toolbar drawerToggleClicked={this.sideDrawerToggleHandler} />
+        {/* //only show navigation item with authenticate on it if you are unauthenticated,
+// show a logout link instead if you are logged in. */}
+        <Toolbar
+          isAuth={this.props.isAuthenticated}
+          drawerToggleClicked={this.sideDrawerToggleHandler}
+        />
         <SideDrawer
+          isAuth={this.props.isAuthenticated}
           open={this.state.showSideDrawer}
           closed={this.sideDrawerClosedHandler}
         />
@@ -40,4 +49,12 @@ class Layout extends Component {
   }
 }
 
-export default Layout;
+//only show navigation item with authenticate on it if you are unauthenticated,
+// show a logout link instead if you are logged in.
+const mapStateToProps = (state) => {
+  return {
+    isAuthenticated: state.auth.token !== null,
+  };
+};
+
+export default connect(mapStateToProps)(Layout);

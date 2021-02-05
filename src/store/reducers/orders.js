@@ -1,5 +1,5 @@
 import * as actionTypes from "../actions/actionTypes";
-import { updateObject } from "../utility";
+import { updateObject } from "../../shared/utility";
 
 const initialState = {
   orders: [],
@@ -13,7 +13,7 @@ const purchaseInit = (state, action) => {
 };
 
 const purchaseBurgerStart = (state, action) => {
-  return updateObject(state, { loading: false });//!
+  return updateObject(state, { loading: true });// show a spinner if we implement this functionality in our component when we are sending this to a server,
 };
 
 const purchaseBurgerSuccess = (state, action) => {
