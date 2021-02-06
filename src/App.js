@@ -6,11 +6,27 @@ import { connect } from "react-redux";
 
 import Layout from "./containers/Layout/Layout";
 import BurgerBuilder from "./containers/BurgerBuilder/BurgerBuilder";
-import Checkout from "./containers/Checkout/Checkout";
-import Orders from "./containers/Orders/Orders";
-import Auth from "./containers/Auth/Auth";
+// import Checkout from "./containers/Checkout/Checkout";
+// import Orders from "./containers/Orders/Orders";
+// import Auth from "./containers/Auth/Auth";
 import Logout from "./containers/Auth/Logout/Logout";
 import * as actions from "./store/actions/index";
+// import HOC to load some components lazily.
+import asyncComponent from "./hoc/asyncComponent/asyncComponent";
+
+//* set up some components to be loaded lazily - the ones that are not necessarily visited by users
+const asyncCheckout = asyncComponent(() => {
+  return import("./containers/Checkout/Checkout"); //return this import statement as a function where then, I can define the path to the component we want to load lazily
+});
+
+const asyncOrders = asyncComponent(() => {
+  return import("./containers/Orders/Orders");
+});
+
+const asyncAuth = asyncComponent(() => {
+  return import("./containers/Auth/Auth");
+});
+//* end of set up some components to be loaded lazily
 
 class App extends Component {
   //code to test if it will call componentWillMount
@@ -29,7 +45,8 @@ class App extends Component {
     let routes = (
       //Switch loads the first one that meets a path
       <Switch>
-        <Route path="/auth" component={Auth} />
+        {/* <Route path="/auth" component={Auth} /> */}
+        <Route path="/auth" component={asyncAuth} />
         <Route path="/" exact component={BurgerBuilder} />
         <Redirect to="/" />{" "}
         {/* in case the user goes to /order or other address he will be redirected, instead of getting a empty page*/}
@@ -43,12 +60,16 @@ class App extends Component {
         <Switch>
           {/* //! logged out user can access /orders (not even manually)
 if we don't render this route component (order & checkout page), we get no way of going there, an't reach it because the react router is not aware of it and will never load it*/}
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/orders" component={Orders} />
+          {/* <Route path="/checkout" component={Checkout} />
+          <Route path="/orders" component={Orders} /> */}
+          <Route path="/checkout" component={asyncCheckout} />
+          <Route path="/orders" component={asyncOrders} />
+
           <Route path="/logout" component={Logout} />
 
           {/* //with a route to Auth, the Auth container redirects to a route that the user does not have access to even though he is auth*/}
-          <Route path="/auth" component={Auth} />
+          {/* <Route path="/auth" component={Auth} /> */}
+          <Route path="/auth" component={asyncAuth} />
 
           <Route path="/" exact component={BurgerBuilder} />
           <Redirect to="/" />
