@@ -22,6 +22,8 @@ import * as actions from "../../store/actions/index";
 //   bacon: 0.7,
 // };
 
+//! test containers: strip out the component part and get rid of the connection to redux.
+//! this export strips out the connection to Redux so I can do a shallow rendering for testing
 export class BurgerBuilder extends Component {
   // constructor(props){
   //     super(props);
@@ -310,6 +312,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
+//! connection to Redux
 export default connect(
   mapStateToProps,
   mapDispatchToProps
