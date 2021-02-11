@@ -10,10 +10,19 @@ import { createStore, compose, applyMiddleware, combineReducers } from "redux";
 import thunk from "redux-thunk";
 import burgerBuilderReducer from "./store/reducers/burgerBuilder";
 import orderReducer from "./store/reducers/orders";
-import authReducer from "./store/reducers/auth"
+import authReducer from "./store/reducers/auth";
+
+//! Hiding the access to your store and state from users using redux devtools for chrome
+//only set this extension if we are in development mode
+const composeEnhancers =
+  process.env.REACT_APP_NODE_ENVX === "development"
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+    : null || compose;
+//process is a global variable available with the need to import it.
+//redux dev tools will only be available in the development environment.
 
 //? basic setup - no middleware
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+// const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 //! TypeError: Cannot read property 'toFixed' of undefined
 //! src/components/Burger/BuildControls/BuildControls.js:17 - Current Price: <strong>{props.price.toFixed(2)}</strong>

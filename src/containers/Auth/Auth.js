@@ -7,6 +7,7 @@ import Button from "../../components/UI/Button/Button";
 import classes from "./Auth.module.css";
 import * as actions from "../../store/actions/index";
 import Spinner from "../../components/UI/Spinner/Spinner";
+import { updateObject, checkValidity } from "../../shared/utility";
 
 class Auth extends Component {
   //? manage my form through the state of this auth container, not through redux because I'm only talking about the local state, the values the user entered into their form inputs and so on and it makes more sense to me to use them and to manage them inside the container with react's state property.
@@ -83,19 +84,33 @@ class Auth extends Component {
     return isValid;
   }
 
+  // inputChangedHandler = (event, controlName) => {
+  //   const updatedControls = {
+  //     ...this.state.controls,
+  //     [controlName]: {
+  //       ...this.state.controls[controlName],
+  //       value: event.target.value,
+  //       valid: this.checkValidity(
+  //         event.target.value,
+  //         this.state.controls[controlName].validation
+  //       ),
+  //       touched: true,
+  //     },
+  //   };
+  //   this.setState({ controls: updatedControls });
+  // };
+  //* shared/utility.js
   inputChangedHandler = (event, controlName) => {
-    const updatedControls = {
-      ...this.state.controls,
-      [controlName]: {
-        ...this.state.controls[controlName],
+    const updatedControls = updateObject(this.state.controls, {
+      [controlName]: updateObject(this.state.controls[controlName], {
         value: event.target.value,
-        valid: this.checkValidity(
+        valid: checkValidity(
           event.target.value,
           this.state.controls[controlName].validation
         ),
         touched: true,
-      },
-    };
+      }),
+    });
     this.setState({ controls: updatedControls });
   };
 
