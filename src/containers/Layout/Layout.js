@@ -52,6 +52,9 @@ class Layout extends Component {
 //only show navigation item with authenticate on it if you are unauthenticated,
 // show a logout link instead if you are logged in.
 const mapStateToProps = (state) => {
+  console.log("!!!--- state.auth.token: ", state.auth.token);
+  console.log('%cPretty colors', 'background-color: turquoise; color: white; padding: 4px')
+
   return {
     isAuthenticated: state.auth.token !== null,
   };
